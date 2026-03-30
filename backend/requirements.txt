@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pandas
+duckdb
+openpyxl
+pydantic
+pydantic-settings
+python-dotenv
+requests
+gdown
+pydantic-settings
