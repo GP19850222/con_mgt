@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { FileBarChart2, X } from 'lucide-react';
+import { FileBarChart2, X, RefreshCw } from 'lucide-react';
 import { useFilters } from './providers/FilterProvider';
 import { useDashboardFilters } from '@/hooks/useDashboardData';
+import { useSWRConfig } from 'swr';
+import api from '@/lib/axios';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -14,6 +16,27 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { filters, setFilters, unitScale, setUnitScale, resetInteractiveFilters, resetAllFilters } = useFilters();
   const { filterOptions, isLoading: filtersLoading } = useDashboardFilters();
   const [custSearch, setCustSearch] = React.useState('');
+
+  const { mutate } = useSWRConfig();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await api.post('/api/dashboard/refresh');
+      // Re-fetch all API endpoints in SWR for Dashboard
+      await mutate(
+        (key) => (Array.isArray(key) ? key[0] : key).toString().includes('/api/dashboard'),
+        undefined,
+        { revalidate: true }
+      );
+    } catch (error) {
+      console.error("Lỗi cập nhật dữ liệu", error);
+      alert("Cập nhật dữ liệu thất bại");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const hasInitializedFloors = React.useRef(false);
 
@@ -204,9 +227,17 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
         </div>
       </div>
 
+      <div className="mt-8 pt-4 border-t border-slate-200 pb-10 flex flex-col gap-3">
+        <button 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="w-full bg-indigo-600 outline-none text-white rounded-md py-3 text-sm font-semibold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-sm focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-75 disabled:cursor-not-allowed"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Đang cập nhật mới...' : 'Đồng bộ Dữ liệu'}
+        </button>
+
       {hasAnyFilters && (
-        <div className="mt-8 pt-4 border-t border-slate-200 pb-10">
-          <p className="text-sm font-medium text-amber-600 mb-3 text-center animate-pulse">🔍 Đang áp dụng bộ lọc</p>
           <button 
             onClick={() => {
                 resetAllFilters();
@@ -216,8 +247,8 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           >
             🔄 Reset Toàn Bộ Bộ Lọc
           </button>
-        </div>
       )}
+      </div>
       </aside>
     </>
   );

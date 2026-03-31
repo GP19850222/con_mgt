@@ -15,30 +15,16 @@ import xml.etree.ElementTree as ET
 from dependencies import get_current_user
 
 from contextlib import asynccontextmanager
-import gdown
 
 # ================================
 # KHỞI TẠO APP & CONFIG
 # ================================
 load_dotenv()
 
-# Google Drive File ID & Path (Cần thiết cho Cloud)
-DRIVE_FILE_ID = os.getenv("GOOGLE_DRIVE_FILE_ID")
-TMP_DATA_PATH = "/tmp/contract_data.xlsx" if os.name != 'nt' else "./contract_data.xlsx"
-DATA_FILE_PATH = os.getenv("DATA_FILE_PATH", TMP_DATA_PATH)
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # STARTUP: Tải file từ Google Drive nếu có ID
-    if DRIVE_FILE_ID:
-        print(f"--- Đang tải file từ Google Drive (ID: {DRIVE_FILE_ID}) ---")
-        try:
-            # Gdown tải file về TMP_DATA_PATH
-            gdown.download(id=DRIVE_FILE_ID, output=TMP_DATA_PATH, quiet=False)
-            print("--- Tải file thành công! ---")
-        except Exception as e:
-            print(f"--- Lỗi khi tải file: {e} ---")
-    
+    # STARTUP: Tải dữ liệu từ Google Sheet vào RAM
+    DataLoader.load_all()
     yield
     # SHUTDOWN (Nếu cần)
 
@@ -87,23 +73,51 @@ class DataLoader:
 
     @classmethod
     def load_all(cls):
-        """Đọc và cache DataFrames trực tiếp từ Excel qua DuckDB query."""
-        if not os.path.exists(DATA_FILE_PATH):
-            print(f"Lỗi: Không tìm thấy file dữ liệu tại {DATA_FILE_PATH}")
-            return
-            
+        """Tải dữ liệu trực tiếp từ Google Sheet vào RAM."""
         try:
-            all_sheets = pd.read_excel(DATA_FILE_PATH, sheet_name=None)
+            print("--- Đang tải dữ liệu từ Google Sheet (Vào RAM)... ---")
+            sheet_id = os.getenv("GOOGLE_SHEET_ID")
+            creds_json = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+
+            if not sheet_id or not creds_json:
+                print("Lỗi: Thiếu GOOGLE_SHEET_ID hoặc GOOGLE_SERVICE_ACCOUNT_JSON trong biến môi trường.")
+                return
+
+            import json
+            from google.oauth2 import service_account
+            import requests
+
+            # Đọc credentials service account
+            creds_auth = service_account.Credentials.from_service_account_info(
+                json.loads(creds_json), scopes=['https://www.googleapis.com/auth/drive.readonly']
+            )
+
+            # Phải lấy Access Token từ creds
+            from google.auth.transport.requests import Request
+            creds_auth.refresh(Request())
+
+            # URL tải định dạng xlsx
+            url = f"https://www.googleapis.com/drive/v3/files/{sheet_id}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            headers = {"Authorization": f"Bearer {creds_auth.token}"}
+            
+            response = requests.get(url, headers=headers, timeout=60)
+            if response.status_code != 200:
+                print(f"Lỗi tải file từ Google API: {response.text}")
+                return
+            
+            # Đọc vào memory bằng io.BytesIO
+            excel_data = io.BytesIO(response.content)
+            all_sheets = pd.read_excel(excel_data, sheet_name=None)
             df_info = all_sheets.get('ContractInfo')
             df_rev = all_sheets.get('RevEst')
 
             if df_info is None or df_rev is None:
-                raise ValueError("Bảng ContractInfo hoặc RevEst không tồn tại trong file Excel.")
+                raise ValueError("Bảng ContractInfo hoặc RevEst không tồn tại trong file Google Sheet.")
                 
             cls._df_raw = cls._load_and_process_data(df_info, df_rev)
             cls._df_master_detail = cls._load_contract_table_data(df_info, df_rev)
             cls._df_current_price = cls._load_current_price_data(df_info, df_rev)
-            print(f"Đã load data thành công: Raw({len(cls._df_raw)}), Master({len(cls._df_master_detail)}), Current({len(cls._df_current_price)})")
+            print(f"Đã load data thành công vào RAM: Raw({len(cls._df_raw)}), Master({len(cls._df_master_detail)}), Current({len(cls._df_current_price)})")
         except Exception as e:
             print(f"Lỗi khi load_all: {e}")
             import traceback
@@ -305,9 +319,14 @@ def apply_filters(df_in: pd.DataFrame, filters: FilterParams, exclude: list = []
 # ================================
 # API ENDPOINTS
 # ================================
-@app.on_event("startup")
-def on_startup():
-    DataLoader.load_all()
+@app.post("/api/dashboard/refresh", dependencies=[Depends(get_current_user)])
+def refresh_data():
+    """Tải lại Data từ Google Sheet vào RAM thủ công khi được gọi"""
+    try:
+        DataLoader.load_all()
+        return {"status": "success", "message": "Đã tải lại dữ liệu từ Google Sheet vào RAM"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi xảy ra: {e}")
 
 @app.get("/health")
 def healthcheck():
