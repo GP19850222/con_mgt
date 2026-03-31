@@ -29,4 +29,5 @@ async def get_current_user(authorization: str = Header(None)):
         
     except ValueError as e:
         # Token không hợp lệ hoặc hết hạn
-        raise HTTPException(status_code=401, detail=str(e))
+        print(f"Token validation failed. Error: {e}, ClientID configured: {GOOGLE_CLIENT_ID}")
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {e}")
