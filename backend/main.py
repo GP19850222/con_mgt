@@ -90,9 +90,11 @@ class DataLoader:
             # Robust xử lý nháy đơn hoặc kép nếu vô tình bị sao chép vào biến mô trường trên Render
             creds_str = creds_json.strip()
             if creds_str.startswith("'") and creds_str.endswith("'"):
-                creds_str = creds_str[1:-1].replace("\\n", "\n")
-            elif creds_str.startswith('"') and creds_str.endswith('"'):
-                creds_str = creds_str[1:-1].replace("\\n", "\n")
+                creds_str = creds_str[1:-1]
+            elif creds_str.startswith('"') and creds_str.endswith('"') and not creds_str.startswith('"{'):
+                # Tránh lỗi nếu user bọc dấu ngoặc kép bên ngoài
+                pass 
+
 
             # Đọc credentials service account
             creds_auth = service_account.Credentials.from_service_account_info(
