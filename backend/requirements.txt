@@ -9,3 +9,4 @@ python-dotenv
 requests
 google-auth
 pydantic-settings
+google-auth
