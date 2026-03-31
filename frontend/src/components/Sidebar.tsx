@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { FileBarChart2, X, RefreshCw } from 'lucide-react';
+import { FileBarChart2, X, RefreshCw, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 import { useFilters } from './providers/FilterProvider';
 import { useDashboardFilters } from '@/hooks/useDashboardData';
 import { useSWRConfig } from 'swr';
@@ -248,6 +249,16 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             🔄 Reset Toàn Bộ Bộ Lọc
           </button>
       )}
+
+        {/* Nút Đăng xuất */}
+        <button 
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="w-full mt-4 bg-red-50 text-red-600 border border-red-200 rounded-md py-3 text-sm font-semibold hover:bg-red-100 transition-all flex items-center justify-center gap-2 shadow-sm focus:ring-2 focus:ring-red-500/50"
+        >
+          <LogOut className="w-4 h-4" />
+          Đăng xuất
+        </button>
+
       </div>
       </aside>
     </>
