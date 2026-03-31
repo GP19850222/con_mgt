@@ -87,9 +87,16 @@ class DataLoader:
             from google.oauth2 import service_account
             import requests
 
+            # Robust xử lý nháy đơn hoặc kép nếu vô tình bị sao chép vào biến mô trường trên Render
+            creds_str = creds_json.strip()
+            if creds_str.startswith("'") and creds_str.endswith("'"):
+                creds_str = creds_str[1:-1].replace("\\n", "\n")
+            elif creds_str.startswith('"') and creds_str.endswith('"'):
+                creds_str = creds_str[1:-1].replace("\\n", "\n")
+
             # Đọc credentials service account
             creds_auth = service_account.Credentials.from_service_account_info(
-                json.loads(creds_json), scopes=['https://www.googleapis.com/auth/drive.readonly']
+                json.loads(creds_str), scopes=['https://www.googleapis.com/auth/drive.readonly']
             )
 
             # Phải lấy Access Token từ creds
@@ -587,4 +594,6 @@ def export_excel(filters: FilterParams):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
