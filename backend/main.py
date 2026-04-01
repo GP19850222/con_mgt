@@ -374,6 +374,7 @@ def get_kpi_metrics(filters: FilterParams):
         
         # Chỉ tính trên diện tích đang có khách (giá > 0)
         df_occupied = df_price_filtered[df_price_filtered['rent_usd'] > 0]
+        df_ser_occupied = df_price_filtered[df_price_filtered['ser_usd'] > 0]
         
         rent_stats = {
             "max": float(df_occupied['rent_usd'].max()) if not df_occupied.empty else 0,
@@ -381,9 +382,9 @@ def get_kpi_metrics(filters: FilterParams):
             "avg": float(df_occupied['rent_usd'].mean()) if not df_occupied.empty else 0
         }
         ser_stats = {
-            "max": float(df_occupied['ser_usd'].max()) if not df_occupied.empty else 0,
-            "min": float(df_occupied['ser_usd'].min()) if not df_occupied.empty else 0,
-            "avg": float(df_occupied['ser_usd'].mean()) if not df_occupied.empty else 0
+            "max": float(df_ser_occupied['ser_usd'].max()) if not df_ser_occupied.empty else 0,
+            "min": float(df_ser_occupied['ser_usd'].min()) if not df_ser_occupied.empty else 0,
+            "avg": float(df_ser_occupied['ser_usd'].mean()) if not df_ser_occupied.empty else 0
         }
     else:
         rent_stats = {"max": 0, "min": 0, "avg": 0}
