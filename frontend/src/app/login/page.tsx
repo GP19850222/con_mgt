@@ -10,12 +10,12 @@ export default function LoginPage() {
         <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <LogIn className="w-8 h-8 text-indigo-600" />
         </div>
-        
+
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight mb-2">
-          Hệ thống Quản lý Hợp đồng
+          HỆ THỐNG KIỂM SOÁT HỢP ĐỒNG THUÊ TẠI ETC
         </h1>
         <p className="text-slate-500 text-sm mb-10">
-          Vui lòng đăng nhập bằng tài khoản Google được cấp phép để truy cập Dashboard.
+          Vui lòng đăng nhập bằng tài khoản Google được cấp phép để truy cập hệ thống
         </p>
 
         <button
@@ -40,12 +40,12 @@ export default function LoginPage() {
               fill="#EA4335"
             />
           </svg>
-          Tiếp tục với Google
+          Đăng nhập với Google
         </button>
 
         <div className="mt-12 pt-8 border-t border-slate-100 italic">
           <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-            Bảo mật bởi Google OAuth & NextAuth.js
+            Vui lòng thoát khỏi trang này nếu như bạn không có tài khoản được cấp phép
           </p>
         </div>
       </div>

@@ -39,14 +39,14 @@ export default function DashboardPage() {
           <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.3em]">Hệ thống Quản lý</span>
         </div>
         <h1 className="text-2xl md:text-4xl font-bold text-slate-900 tracking-tight font-display mb-3">
-          Phân Tích Doanh Thu Hợp Đồng
+          HỆ THỐNG KIỂM SOÁT HỢP ĐỒNG THUÊ TẠI ETOWN CENTRAL
         </h1>
         <p className="text-slate-500 max-w-2xl text-sm md:text-base leading-relaxed">
-          Theo dõi tổng quan chi tiết về doanh thu, biến động giá thuê và hiệu quả vận hành thực tế tại dự án.
+          Theo dõi tổng hợp về doanh thu hợp đồng, giá thuê & phí dịch vụ tại tòa nhà ETC
         </p>
       </header>
 
-      {kpiError && <p className="text-red-500 bg-red-50 p-4 rounded-md">Lỗi khi tải dữ liệu KPI từ Backend.</p>}
+      {kpiError && <p className="text-red-500 bg-red-50 p-4 rounded-md">Lỗi khi tải dữ liệu KPI từ Server. Liên hệ admin - 0977830505.</p>}
 
       {/* SECTION 1: PRICE STATS (USD/m2) */}
       <section className="space-y-6">
@@ -57,24 +57,24 @@ export default function DashboardPage() {
           </div>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">Đơn vị: USD / m²</span>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <MetricCard title="Giá Thuê Cao Nhất" value={formatUSD(kpiData?.rent_stats?.max)} valueColor="text-slate-900" isLoading={kpiLoading} />
-          <MetricCard 
-            title="Giá Thuê Bình Quân" 
-            value={formatUSD(kpiData?.rent_stats?.avg)} 
-            valueColor="text-slate-900" 
-            isLoading={kpiLoading} 
+          <MetricCard
+            title="Giá Thuê Bình Quân"
+            value={formatUSD(kpiData?.rent_stats?.avg)}
+            valueColor="text-slate-900"
+            isLoading={kpiLoading}
             tooltip="(Giá thuê x diện tích) / tổng diện tích"
           />
           <MetricCard title="Giá Thuê Thấp Nhất" value={formatUSD(kpiData?.rent_stats?.min)} valueColor="text-slate-900" isLoading={kpiLoading} />
-          
+
           <MetricCard title="Phí DV Cao Nhất" value={formatUSD(kpiData?.ser_stats?.max)} valueColor="text-slate-900" isLoading={kpiLoading} />
-          <MetricCard 
-            title="Phí DV Bình Quân" 
-            value={formatUSD(kpiData?.ser_stats?.avg)} 
-            valueColor="text-slate-900" 
-            isLoading={kpiLoading} 
+          <MetricCard
+            title="Phí DV Bình Quân"
+            value={formatUSD(kpiData?.ser_stats?.avg)}
+            valueColor="text-slate-900"
+            isLoading={kpiLoading}
             tooltip="(Phí dịch vụ x diện tích) / tổng diện tích"
           />
           <MetricCard title="Phí DV Thấp Nhất" value={formatUSD(kpiData?.ser_stats?.min)} valueColor="text-slate-900" isLoading={kpiLoading} />
@@ -90,32 +90,32 @@ export default function DashboardPage() {
           </div>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full border border-slate-200">Đơn vị: {unitScale === 1 ? 'VNĐ' : unitScale === 1000000 ? 'Triệu VNĐ' : 'Tỷ VNĐ'}</span>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <MetricCard 
-            title="Tỷ Giá VCB" 
+          <MetricCard
+            title="Tỷ Giá VCB"
             value={kpiData?.fx_rate?.toLocaleString('vi-VN') || "26.355"}
             valueColor="text-indigo-600"
-            isLoading={kpiLoading} 
+            isLoading={kpiLoading}
             tooltip={`Tỷ giá bán USD được cập nhật từ Vietcombank lúc: ${new Date().toLocaleDateString('vi-VN')}`}
           />
-          <MetricCard 
-            title="D.Thu Thuê Cơ Bản" 
-            value={formatVND(kpiData?.total_rent)} 
+          <MetricCard
+            title="D.Thu Thuê Văn phòng"
+            value={formatVND(kpiData?.total_rent)}
             valueColor="text-slate-900"
-            isLoading={kpiLoading} 
+            isLoading={kpiLoading}
           />
-          <MetricCard 
-            title="D.Thu Phí Dịch Vụ" 
-            value={formatVND(kpiData?.total_ser)} 
+          <MetricCard
+            title="D.Thu Phí Dịch Vụ cố định"
+            value={formatVND(kpiData?.total_ser)}
             valueColor="text-slate-900"
-            isLoading={kpiLoading} 
+            isLoading={kpiLoading}
           />
-          <MetricCard 
-            title="TỔNG DOANH THU" 
-            value={formatVND(kpiData?.total_all)} 
+          <MetricCard
+            title="TỔNG DOANH THU HỢP ĐỒNG THUÊ"
+            value={formatVND(kpiData?.total_all)}
             valueColor="text-emerald-600"
-            isLoading={kpiLoading} 
+            isLoading={kpiLoading}
           />
         </div>
       </section>
