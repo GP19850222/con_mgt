@@ -1,0 +1,14 @@
+name: Keep_My_Backend_Alive
+
+on:
+  schedule:
+    # Chạy mỗi 14 phút (Render free thường ngủ sau 15 phút)
+    - cron: '*/14 * * * *'
+  workflow_dispatch: # Nút này giúp bạn có thể bấm chạy thủ công để test
+
+jobs:
+  ping_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send request to render
+        run: curl -I https://con-mgt-1.onrender.com/health
